@@ -1,15 +1,15 @@
 /*
  * Copyright (C) 2019-2020 HERE Europe B.V.
  *
- * Licensed under the Apache License,Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -19,24 +19,39 @@
 
 import 'dart:developer';
 import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
+import 'package:here_sdk/search.dart';
+import 'package:WaliedCheetos_DTPOC/FetchData.dart';
 import 'package:WaliedCheetos_DTPOC/appConfig.dart';
+
 import 'package:maps_curved_line/maps_curved_line.dart';
+// import 'package:latlng/latlng.dart';
+
+// class CONFIG {
+//   String appTitle = 'WaliedCheetos - POC for DT';
+//   double initialLAT = 25.40279;
+//   double initialLNG = 55.44262;
+//   // double initialLAT = 25.19893;
+//   // double initialLNG = 55.27991;
+//   MapCameraOrientationUpdate mapCameraOrientationUpdate;
+//   double initialDistanceToEarthInMeters = 8000;
+//   String prefix = 'WaliedCheetos: ';
+// }
 
 class HERESetup {
   BuildContext _context;
+  // CONFIG _config = CONFIG();
   appConfig _appConfig = appConfig();
+  FetchData _fetchData = new FetchData();
   HereMapController _hereMapController;
+  SearchEngine _searchEngine;
   GeoPolygon _geoPolygonAjman;
   MapPolygon _mapPolygonAjman;
   MapImage _mapImageMarker;
@@ -44,11 +59,10 @@ class HERESetup {
   List<MapMarker> _mapMarkerList = [];
   List<MapPolyline> _mapPolylineList = [];
   TextEditingController _textEditingController;
-  String _countryCode;
-  String _city;
 
   HERESetup(BuildContext context, HereMapController hereMapController,
       TextEditingController textEditingController) {
+    // HERESetup(BuildContext context, HereMapController hereMapController) {
     _textEditingController = textEditingController;
     _context = context;
     _hereMapController = hereMapController;
@@ -62,7 +76,18 @@ class HERESetup {
     Metadata metadata = new Metadata();
     metadata.setString('deliveryLocation', 'WaliedCheetos says Holllla');
     _addMarker(_hereMapController.camera.state.targetCoordinates, 1, metadata);
-    _addAjmanPolygon();
+
+//initiate search engine
+//
+    try {
+      _searchEngine = new SearchEngine();
+    } on InstantiationException catch (instantiationException) {
+      throw new Exception("Initialization of SearchEngine failed: " +
+          instantiationException.error.toString());
+    } catch (exception) {
+      throw new Exception(exception.error.toString());
+    }
+    //_addAjmanPolygon();
   }
 
   void _setupPanGesture() {
@@ -74,96 +99,26 @@ class HERESetup {
         _mapMarker.coordinates =
             _hereMapController.camera.state.targetCoordinates;
 
+        // print('Current marker location: ' +
+        //     _mapMarker.coordinates.latitude.toString() +
+        //     ',' +
+        //     _mapMarker.coordinates.longitude.toString() +
+        //     ',' +
+        //     _mapMarker.coordinates.altitude.toString());
+
         if (gestureState == GestureState.end) {
           _reverseGeocode(_hereMapController.camera.state.targetCoordinates);
           _clearPolylines();
 
-          // _mapPolylineList.add(_prepareCurvedPolylines(
-          //     GeoCoordinates(_appConfig.initialLAT, _appConfig.initialLNG),
-          //     _hereMapController.camera.state.targetCoordinates));
+          _mapPolylineList.add(_prepareCurvedPolylines(
+              GeoCoordinates(_appConfig.initialLAT, _appConfig.initialLNG),
+              _hereMapController.camera.state.targetCoordinates));
 
-          // _hereMapController.mapScene.addMapPolyline(_mapPolylineList[0]);
+          _hereMapController.mapScene.addMapPolyline(_mapPolylineList[0]);
         } else {}
       });
-    } catch (exception) {
-      throw new Exception(exception);
-    }
-  }
-
-  void _reverseGeocode(GeoCoordinates geoCoordinates) async {
-    try {
-      String reverseGeocodingURL_at =
-          'https://search.hereapi.com/v1/revgeocode?limit=1&lang=en-US&at=' +
-              geoCoordinates.latitude.toString() +
-              ',' +
-              geoCoordinates.longitude.toString() +
-              '&apikey=' +
-              _appConfig.apikey;
-
-      String reverseGeocodingURL_in =
-          'https://search.hereapi.com/v1/revgeocode?limit=1&lang=en-US&in=circle:' +
-              geoCoordinates.latitude.toString() +
-              ',' +
-              geoCoordinates.longitude.toString() +
-              ';r=55' +
-              '&apikey=' +
-              _appConfig.apikey;
-
-      print(reverseGeocodingURL_at);
-      print(reverseGeocodingURL_in);
-
-      http.Response response = await http.get(reverseGeocodingURL_in);
-
-      if (response.statusCode == 200) {
-        print(response.body);
-        // If the server did return a 200 OK response,
-        // then parse the JSON.
-        final responseBody = jsonDecode(response.body);
-        var items = responseBody['items'] as List;
-
-        if (items.isNotEmpty) {
-          _countryCode = items[0]['address']['countryCode'];
-          _city = items[0]['address']['city'];
-
-          print('${_city.toUpperCase()} , ${_countryCode.toUpperCase()}');
-
-          _textEditingController.text = items[0]['title'];
-
-          if (_countryCode.toUpperCase() == 'ARE' &&
-              _city.toUpperCase() == 'AJMAN') {
-            _mapPolylineList.add(_prepareCurvedPolylines(
-                GeoCoordinates(_appConfig.initialLAT, _appConfig.initialLNG),
-                geoCoordinates));
-
-            _hereMapController.mapScene.addMapPolyline(_mapPolylineList[0]);
-          } else {
-            showDialog(
-                context: _context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('WaliedCheetos says Hollla ...!!!'),
-                    content: Text('We can NOT drop you off outside Ajman :-('),
-                  );
-                });
-          }
-        } else {
-          _countryCode = '';
-          _city = '';
-
-          _textEditingController.text = _appConfig.prefix + 'no address found';
-        }
-      } else {
-        // If the server did not return a 200 OK response,
-        // then throw an exception.
-        _countryCode = '';
-        _city = '';
-
-        _textEditingController.text = _appConfig.prefix + 'no address found';
-        throw Exception(
-            'Failed to reverse geocode the provided coordinates: ${response.body}');
-      }
-    } catch (exception) {
-      throw new Exception(exception);
+    } catch (e) {
+      log(e.toString());
     }
   }
 
@@ -183,8 +138,8 @@ class HERESetup {
             imagePixelData, ImageFormat.png);
       }
 
-      // By default,the anchor point is set to 0.5,0.5 (= centered).
-      // Here the bottom,middle position should point to the location.
+      // By default, the anchor point is set to 0.5, 0.5 (= centered).
+      // Here the bottom, middle position should point to the location.
       Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
       _mapMarker =
           MapMarker.withAnchor(geoCoordinates, _mapImageMarker, anchor2D);
@@ -192,8 +147,8 @@ class HERESetup {
       _mapMarker.metadata = markerData;
       _hereMapController.mapScene.addMapMarker(_mapMarker);
       _mapMarkerList.add(_mapMarker);
-    } catch (exception) {
-      throw new Exception(exception);
+    } catch (e) {
+      log(e.toString());
     }
   }
 
@@ -204,7 +159,7 @@ class HERESetup {
       }
       _mapMarkerList.clear();
     } catch (exception) {
-      throw new Exception(exception);
+      throw new Exception(exception.error.toString());
     }
   }
 
@@ -215,7 +170,7 @@ class HERESetup {
       }
       _mapPolylineList.clear();
     } catch (exception) {
-      throw new Exception(exception);
+      throw new Exception(exception.error.toString());
     }
   }
 
@@ -224,14 +179,8 @@ class HERESetup {
     List<String> geocoordinatesStringsList = _appConfig.polygonAjman.split(',');
     for (var i = 0; i < geocoordinatesStringsList.length; i++) {
       GeoCoordinates geoCoordinatesCurrent = new GeoCoordinates(
-          double.parse(geocoordinatesStringsList[
-                  (geocoordinatesStringsList.length - (i + 1))]
-              .split(' ')[1]),
-          double.parse(geocoordinatesStringsList[
-                  (geocoordinatesStringsList.length - (i + 1))]
-              .split(' ')[0]));
-      // double.parse(geocoordinatesStringsList[i].split(' ')[1]),
-      // double.parse(geocoordinatesStringsList[i].split(' ')[0]));
+          double.parse(geocoordinatesStringsList[i].split(' ')[1]),
+          double.parse(geocoordinatesStringsList[i].split(' ')[0]));
 
       geocoordiantesList.add(geoCoordinatesCurrent);
     }
@@ -245,10 +194,29 @@ class HERESetup {
       throw new Exception(exception.error.toString());
     }
     _mapPolygonAjman =
-        new MapPolygon(_geoPolygonAjman, Color.fromRGBO(255, 0, 0, 0.3));
-
+        new MapPolygon(_geoPolygonAjman, Color.fromRGBO(255, 0, 0, 13));
     _hereMapController.mapScene.addMapPolygon(_mapPolygonAjman);
     print('Ajman polgon has been added to the map');
+  }
+
+  void _reverseGeocode(GeoCoordinates geoCoordinates) {
+    if (_searchEngine != null) {
+      _searchEngine.searchByCoordinates(
+          geoCoordinates, new SearchOptions(LanguageCode.enUs, 1),
+          (SearchError searchError, List<Place> placesList) {
+        if (searchError == null && placesList.length > 0) {
+          // _appConfig.addressPlaceHolder.value =
+          //     new TextEditingValue(text: placesList[0].title);
+          //print(placesList[0].title);
+          // _appConfig.addressPlaceHolder.text = placesList[0].title;
+          _textEditingController.text = placesList[0].title;
+        } else {
+          // print(_config.prefix + 'no address found');
+          _appConfig.addressPlaceHolder.text =
+              _appConfig.prefix + 'no address found';
+        }
+      });
+    }
   }
 
   MapPolyline _prepareCurvedPolylines(
@@ -270,9 +238,9 @@ class HERESetup {
       throw new Exception("Initialization of geopolyline failed: " +
           instantiationException.error.toString());
     } catch (exception) {
-      throw new Exception(exception);
+      throw new Exception(exception.error.toString());
     }
 
-    return new MapPolyline(geoPolyline, 20, Colors.blueGrey);
+    return new MapPolyline(geoPolyline, 20, Colors.red);
   }
 }

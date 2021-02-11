@@ -1,15 +1,15 @@
 /*
  * Copyright (C) 2019-2020 HERE Europe B.V.
  *
- * Licensed under the Apache License,Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
   // Use _context only within the scope of this widget.
   BuildContext _context;
   HERESetup _hereSetup;
-
+  // CONFIG _config = new CONFIG();
   appConfig _appConfig = appConfig();
   BottomAppBar bottomNavigationBar;
   TextEditingController _textEditingController = TextEditingController();
@@ -51,12 +51,14 @@ class MyApp extends StatelessWidget {
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
+
+          //,
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           //   children: [
-          //     button('Book a taxi',_anchoredMapMarkersButtonClicked),
-          //     button('Say hi to Sarmad',_centeredMapMarkersButtonClicked),
-          //     button('WaliedCheetos',_clearButtonClicked),
+          //     button('Anchored', _anchoredMapMarkersButtonClicked),
+          //     button('Centered', _centeredMapMarkersButtonClicked),
+          //     button('Clear', _clearButtonClicked),
           //   ],
           // ),
         ],
@@ -85,24 +87,13 @@ class MyApp extends StatelessWidget {
       if (error == null) {
         _hereSetup =
             HERESetup(_context, hereMapController, _textEditingController);
-
-        // HERESetup(_context,hereMapController);
+        // HERESetup(_context, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
     });
   }
 
-  // void _anchoredMapMarkersButtonClicked() {
-  //   //_hereSetup.
-  // }
-  // void _centeredMapMarkersButtonClicked() {
-  //   //_mapMarkerExample.showCenteredMapMarkers();
-  // }
-
-  // void _clearButtonClicked() {
-  //   //_mapMarkerExample.clearMap();
-  // }
 /*
   void _anchoredMapMarkersButtonClicked() {
     _mapMarkerExample.showAnchoredMapMarkers();
