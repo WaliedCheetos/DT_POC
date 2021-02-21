@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:here_sdk/core.dart';
 
 class appConfig {
   String appTitle = 'WaliedCheetos - POC for DT';
@@ -16,6 +17,13 @@ class appConfig {
 
   String initialGeocodeURL =
       'https://geocoder.ls.hereapi.com/6.2/geocode.json?&apikey=3lKmytJ9qwM22dCKUNNbu2C6zab5zWXYPy5lGKGdYM4&searchText=Ajman&additionalData=IncludeShapeLevel,city&maxResults=1&jsonattributes=1&requestId=city';
+
+  Map<GeoCoordinates, double> initialTaxiLocations = {
+    GeoCoordinates(25.41288, 55.44449): 0,
+    GeoCoordinates(25.39679, 55.45058): 30,
+    GeoCoordinates(25.39063, 55.43522): 60,
+    GeoCoordinates(25.38745, 55.45651): 90
+  };
 
   String prefix = 'WaliedCheetos: ';
   TextEditingController addressPlaceHolder = TextEditingController();

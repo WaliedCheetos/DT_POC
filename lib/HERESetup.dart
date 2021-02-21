@@ -41,6 +41,7 @@ class HERESetup {
   MapPolygon _mapPolygonAjman;
   MapImage _mapImageMarker;
   MapMarker _mapMarker;
+  List<MapMarker3D> _mapMarker3DList = [];
   List<MapMarker> _mapMarkerList = [];
   List<MapPolyline> _mapPolylineList = [];
   TextEditingController _textEditingController;
@@ -61,8 +62,29 @@ class HERESetup {
 
     Metadata metadata = new Metadata();
     metadata.setString('deliveryLocation', 'WaliedCheetos says Holllla');
+    _loadInitialTaxiLocations();
     _addMarker(_hereMapController.camera.state.targetCoordinates, 1, metadata);
     _addAjmanPolygon();
+  }
+
+  void _loadInitialTaxiLocations() {
+    try {
+      MapMarker3DModel mapMarker3DModel =
+          MapMarker3DModel.withTextureFilePathAndColor(
+              'assets/lexus_hs.obj',
+              'assets/Lexus.jpg',
+              Color.alphaBlend(Colors.yellow, Colors.black));
+      MapMarker3D mapMarker3D;
+
+      for (var taxiLocation in _appConfig.initialTaxiLocations.entries) {
+        mapMarker3D = MapMarker3D(taxiLocation.key, mapMarker3DModel);
+        mapMarker3D.bearing = taxiLocation.value;
+        _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
+        _mapMarker3DList.add(mapMarker3D);
+      }
+    } catch (exception) {
+      throw new Exception(exception);
+    }
   }
 
   void _setupPanGesture() {
