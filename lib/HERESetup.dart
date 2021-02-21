@@ -224,14 +224,31 @@ class HERESetup {
     List<String> geocoordinatesStringsList = _appConfig.polygonAjman.split(',');
     for (var i = 0; i < geocoordinatesStringsList.length; i++) {
       GeoCoordinates geoCoordinatesCurrent = new GeoCoordinates(
-          double.parse(geocoordinatesStringsList[
-                  (geocoordinatesStringsList.length - (i + 1))]
-              .split(' ')[1]),
-          double.parse(geocoordinatesStringsList[
-                  (geocoordinatesStringsList.length - (i + 1))]
-              .split(' ')[0]));
-      // double.parse(geocoordinatesStringsList[i].split(' ')[1]),
-      // double.parse(geocoordinatesStringsList[i].split(' ')[0]));
+          // double.parse(geocoordinatesStringsList[
+          //         (geocoordinatesStringsList.length - (i + 1))]
+          //     .split(' ')[1]),
+          // double.parse(geocoordinatesStringsList[
+          //         (geocoordinatesStringsList.length - (i + 1))]
+          //     .split(' ')[0]));
+          double.parse(geocoordinatesStringsList[i].split(' ')[1]),
+          double.parse(geocoordinatesStringsList[i].split(' ')[0]));
+
+      geocoordiantesList.add(geoCoordinatesCurrent);
+    }
+
+    geocoordinatesStringsList.clear();
+    geocoordinatesStringsList = _appConfig.polygonAjman01.split(',');
+
+    for (var i = 0; i < geocoordinatesStringsList.length; i++) {
+      GeoCoordinates geoCoordinatesCurrent = new GeoCoordinates(
+          // double.parse(geocoordinatesStringsList[
+          //         (geocoordinatesStringsList.length - (i + 1))]
+          //     .split(' ')[1]),
+          // double.parse(geocoordinatesStringsList[
+          //         (geocoordinatesStringsList.length - (i + 1))]
+          //     .split(' ')[0]));
+          double.parse(geocoordinatesStringsList[i].split(' ')[1]),
+          double.parse(geocoordinatesStringsList[i].split(' ')[0]));
 
       geocoordiantesList.add(geoCoordinatesCurrent);
     }
@@ -249,6 +266,39 @@ class HERESetup {
 
     _hereMapController.mapScene.addMapPolygon(_mapPolygonAjman);
     print('Ajman polgon has been added to the map');
+
+// //new polygon
+//     geocoordinatesStringsList.clear();
+
+//     geocoordinatesStringsList = _appConfig.polygonAjman01.split(',');
+//     for (var i = 0; i < geocoordinatesStringsList.length; i++) {
+//       GeoCoordinates geoCoordinatesCurrent = new GeoCoordinates(
+//           // double.parse(geocoordinatesStringsList[
+//           //         (geocoordinatesStringsList.length - (i + 1))]
+//           //     .split(' ')[1]),
+//           // double.parse(geocoordinatesStringsList[
+//           //         (geocoordinatesStringsList.length - (i + 1))]
+//           //     .split(' ')[0]));
+//           double.parse(geocoordinatesStringsList[i].split(' ')[1]),
+//           double.parse(geocoordinatesStringsList[i].split(' ')[0]));
+
+//       geocoordiantesList.add(geoCoordinatesCurrent);
+//     }
+//     GeoPolygon _geoPolygonAjman01;
+//     MapPolygon _mapPolygonAjman01;
+//     try {
+//       _geoPolygonAjman01 = new GeoPolygon(geocoordiantesList);
+//     } on InstantiationException catch (instantiationException) {
+//       throw new Exception("Initialization of Geopolygon01 failed: " +
+//           instantiationException.error.toString());
+//     } catch (exception) {
+//       throw new Exception(exception.error.toString());
+//     }
+//     _mapPolygonAjman01 =
+//         new MapPolygon(_geoPolygonAjman01, Color.fromRGBO(255, 0, 0, 0.3));
+
+//     _hereMapController.mapScene.addMapPolygon(_mapPolygonAjman01);
+//     print('Ajman polgon01 has been added to the map');
   }
 
   MapPolyline _prepareCurvedPolylines(
