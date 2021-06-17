@@ -79,13 +79,29 @@ class MyApp extends StatelessWidget {
     );
   }
 
+  // void _onMapCreated(HereMapController hereMapController) {
+  //   hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+  //       (MapError error) {
+  //     if (error == null) {
+  //       _hereSetup =
+  //           HERESetup(_context, hereMapController, _textEditingController);
+
+  //       // HERESetup(_context,hereMapController);
+  //     } else {
+  //       print("Map scene not loaded. MapError: " + error.toString());
+  //     }
+  //   });
+  // }
+
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+    String mapScheme_Custom =
+        '[your app path]/assets/mapScenes/omv/omv-traffic-traffic-normal-night.scene.json';
+
+    hereMapController.mapScene.loadSceneFromConfigurationFile(mapScheme_Custom,
         (MapError error) {
       if (error == null) {
         _hereSetup =
             HERESetup(_context, hereMapController, _textEditingController);
-
         // HERESetup(_context,hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
